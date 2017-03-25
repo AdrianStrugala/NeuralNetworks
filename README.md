@@ -1,0 +1,2 @@
+# SieciNeuronowe
+kilka przykladow sieci
