@@ -1,5 +1,5 @@
 
-AI/AI/obj/**
-AI/AI/bin/**
-AI/.vs/**
+C#/AI/obj/**
+C#/AI/bin/**
+C#/.vs/**
 *.user
