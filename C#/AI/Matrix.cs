@@ -56,8 +56,10 @@
             return result;
         }
 
-        public static double[][] Multiple(double[][] matrixA,
-            double[][] matrixB)
+        public static double[][] Multiple(
+            double[][] matrixA,
+            double[][] matrixB,
+            double factor = 1)
         {
             int aRows = matrixA.Length;
             int aCols = matrixA[0].Length;
@@ -69,7 +71,7 @@
             for (int i = 0; i < aRows; ++i) // each row of A
                 for (int j = 0; j < bCols; ++j) // each col of B
                     for (int k = 0; k < aCols; ++k)
-                        result[i][j] += matrixA[i][k] * matrixB[k][j];
+                        result[i][j] += matrixA[i][k] * matrixB[k][j] * factor;
             return result;
         }
     }

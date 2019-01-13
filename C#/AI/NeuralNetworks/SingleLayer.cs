@@ -2,6 +2,7 @@
 {
     using ConsoleTableExt;
     using System;
+    using System.Collections.Generic;
     using System.Data;
 
     static class SingleLayer
@@ -22,32 +23,34 @@
     };
 
         //Parameters
-        public static double _beta = 1;       //output function factor
-        public static double _eta = 0.1;      //learning factor
-        public static int _n;      //no of Neurons in Input Layer
-        public static int _m;     //no of Neurons in Output Layer
+        public static double Beta = 1;       //output function factor
+        public static double Eta = 0.1;      //learning factor
+        public static int N;      //no of Neurons in Input Layer
+        public static int M;     //no of Neurons in Output Layer
 
-        public static readonly int epochs = 1000000;  //no of iterations of learing phase
+        public static readonly int Epochs = 1000;  //no of iterations of learing phase
 
 
-        static double[][] W;
+        static double[][] Weights;
+
+        private static readonly List<double> ErrorList = new List<double>();
 
         static Random random = new Random();
 
         static void Main(string[] args)
         {
-            _n = X[0].Length;
-            _m = Y.Length;
+            N = X[0].Length;
+            M = Y.Length;
 
 
             // INITIALIZATION OF WEIGHT MATRIX
-            W = Matrix.Create(_n, _m);
+            Weights = Matrix.Create(N, M);
 
-            for (int i = 0; i < W.Length; i++) //Macierz wag
+            for (int i = 0; i < Weights.Length; i++) //Macierz wag
             {
-                for (int j = 0; j < W[i].Length; j++)
+                for (int j = 0; j < Weights[i].Length; j++)
                 {
-                    W[i][j] = random.NextDouble();
+                    Weights[i][j] = random.NextDouble();
                 }
             }
 
@@ -58,7 +61,12 @@
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~AFTER TRAINING~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             Check();
 
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ERROR~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
+            foreach (var error in ErrorList)
+            {
+                Console.Write(error + " ");
+            }
 
             Console.ReadKey();
         }
@@ -66,42 +74,54 @@
         static void Train()
         {
             //LEARNING
-            for (int e = 0; e < epochs; e++)
+            for (int e = 0; e < Epochs; e++)
             {
                 // CHOOSING RANDOM EXAMPLE
                 int l = random.Next(X[0].Length);
 
-                double[][] x1 = Matrix.Create(1, _n);
-                x1[0] = X.GetColumn(l);
+                double[][] input = Matrix.Create(1, N);
+                input[0] = X.GetColumn(l);
 
 
                 //  CALCULATING RESPONSE OF NEURAL NETWORK           
-                var y1 = CalculateReponse(x1);
+                var response = CalculateReponse(input);
 
 
                 // CALCULATING DIFFERENCE
-                double[] d = new double[_m];
+                double[] diff = new double[M];
 
-                for (int i = 0; i < d.Length; i++)
+                for (int i = 0; i < diff.Length; i++)
                 {
-                    d[i] = Y[i][l] - y1[i];
+                    diff[i] = Y[i][l] - response[i];
                 }
 
 
                 // BACK PROPAGATION LEARNING
-                double[][] dw = Matrix.Create(_n, _m);
+                double[][] diffForWeights = Matrix.Create(N, M);
 
-                dw = Matrix.Multiple(x1.Transpose(), d, _eta);
+                diffForWeights = Matrix.Multiple(input.Transpose(), diff, Eta);
 
 
-                for (int i = 0; i < W.Length; i++)
+                for (int i = 0; i < Weights.Length; i++)
                 {
-                    for (int j = 0; j < W[i].Length; j++)
+                    for (int j = 0; j < Weights[i].Length; j++)
                     {
-                        W[i][j] = W[i][j] + dw[i][j];
+                        Weights[i][j] = Weights[i][j] + diffForWeights[i][j];
                     }
                 }
 
+
+
+                //STORE ERROR Błąd średnikwadratowy
+                double error = 0;
+                for (int i = 0; i < diff.Length; i++)
+                {
+                    error = diff[i] * diff[i];
+                }
+
+                error = Math.Sqrt(error);
+
+                ErrorList.Add(error);
             }
         }
 
@@ -121,12 +141,10 @@
 
             for (int l = 0; l < X.Length; l++)
             {
-                double[][] x = Matrix.Create(1, _n);
+                double[][] x = Matrix.Create(1, N);
 
                 x[0] = X.GetColumn(l);
 
-
-                double[][] u = Matrix.Multiple(W.Transpose(), x.Transpose());
 
                 var y = CalculateReponse(x);
 
@@ -149,12 +167,12 @@
 
         public static double[] CalculateReponse(double[][] x1)
         {
-            double[][] u1 = Matrix.Multiple(W.Transpose(), x1.Transpose());
+            double[][] u1 = Matrix.Multiple(Weights.Transpose(), x1.Transpose());
 
-            double[] y1 = new double[_m];
+            double[] y1 = new double[M];
             for (int i = 0; i < u1.Length; i++)
             {
-                y1[i] = 1 / (1 + Math.Exp(-_beta * u1[i][0]));
+                y1[i] = 1 / (1 + Math.Exp(-Beta * u1[i][0]));
             }
 
             return y1;
