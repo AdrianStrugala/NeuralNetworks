@@ -1,18 +1,29 @@
-﻿namespace AI
+﻿namespace AI.NeuralNetworks
 {
     using ConsoleTableExt;
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Linq;
 
     static class SingleLayer
     {
+        //Animals
+        public enum Environment
+        {
+            Water = 1,
+            Air = 2,
+            Ground = 3
+        };
+
+
         private static readonly double[][] X =
         {
-            new double[] {4, 2, 2, 4},
-            new double[] {1, 1, 0, 0},
-            new double[] {0, 0, 1, 0},
-            new double[] {5, 2, 1, 10}
+                      //husk //no of legs
+            new double[] {1, 0, (double) Environment.Water}, //fish
+            new double[] {0, 2, (double) Environment.Air}, //bird
+            new double[] {0, 4, (double) Environment.Ground}, //alpaca
+            new double[] {0, 2, (double)Environment.Ground }  //human
         };
 
         private static readonly double[][] Y =  {
@@ -28,14 +39,14 @@
         public static int N;      //no of Neurons in Input Layer
         public static int M;     //no of Neurons in Output Layer
 
-        public static readonly int Epochs = 1000;  //no of iterations of learing phase
+        public static readonly int Epochs = 100000;  //no of iterations of learing phase
 
 
         static double[][] Weights;
 
         private static readonly List<double> ErrorList = new List<double>();
 
-        static Random random = new Random();
+        private static readonly Random Random = new Random();
 
         static void Main(string[] args)
         {
@@ -50,7 +61,7 @@
             {
                 for (int j = 0; j < Weights[i].Length; j++)
                 {
-                    Weights[i][j] = random.NextDouble();
+                    Weights[i][j] = Random.NextDouble();
                 }
             }
 
@@ -63,10 +74,10 @@
 
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ERROR~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
-            foreach (var error in ErrorList)
-            {
-                Console.Write(error + " ");
-            }
+            //            foreach (var error in ErrorList)
+            //            {
+            //                Console.Write(error + " ");
+            //            }
 
             Console.ReadKey();
         }
@@ -77,39 +88,26 @@
             for (int e = 0; e < Epochs; e++)
             {
                 // CHOOSING RANDOM EXAMPLE
-                int l = random.Next(X[0].Length);
+                int l = Random.Next(X.Length);
 
                 double[][] input = Matrix.Create(1, N);
-                input[0] = X.GetColumn(l);
+                input[0] = X[l];
+
+                double[] output = Y[l];
 
 
                 //  CALCULATING RESPONSE OF NEURAL NETWORK           
-                var response = CalculateReponse(input);
+                var networkResponse = CalculateReponse(input);
 
 
                 // CALCULATING DIFFERENCE
-                double[] diff = new double[M];
-
-                for (int i = 0; i < diff.Length; i++)
-                {
-                    diff[i] = Y[i][l] - response[i];
-                }
+                double[] diff = Vector.Substract(output, networkResponse);
 
 
                 // BACK PROPAGATION LEARNING
-                double[][] diffForWeights = Matrix.Create(N, M);
+                double[][] diffForWeights = Matrix.Multiple(input.Transpose(), diff, Eta);
 
-                diffForWeights = Matrix.Multiple(input.Transpose(), diff, Eta);
-
-
-                for (int i = 0; i < Weights.Length; i++)
-                {
-                    for (int j = 0; j < Weights[i].Length; j++)
-                    {
-                        Weights[i][j] = Weights[i][j] + diffForWeights[i][j];
-                    }
-                }
-
+                Weights = Matrix.Add(Weights, diffForWeights);
 
 
                 //STORE ERROR Błąd średnikwadratowy
@@ -133,7 +131,6 @@
             dt.Columns.Add("x1");
             dt.Columns.Add("x2");
             dt.Columns.Add("x3");
-            dt.Columns.Add("x4");
             dt.Columns.Add("y1");
             dt.Columns.Add("y2");
             dt.Columns.Add("y3");
@@ -143,7 +140,7 @@
             {
                 double[][] x = Matrix.Create(1, N);
 
-                x[0] = X.GetColumn(l);
+                x[0] = X[l];
 
 
                 var y = CalculateReponse(x);
@@ -152,11 +149,11 @@
                 row[0] = x[0][0];
                 row[1] = x[0][1];
                 row[2] = x[0][2];
-                row[3] = x[0][3];
-                row[4] = y[0];
-                row[5] = y[1];
-                row[6] = y[2];
-                row[7] = y[3];
+
+                row[3] = y[0];
+                row[4] = y[1];
+                row[5] = y[2];
+                row[6] = y[3];
                 dt.Rows.Add(row);
             }
 
@@ -165,17 +162,25 @@
             builder.ExportAndWrite();
         }
 
-        public static double[] CalculateReponse(double[][] x1)
+        public static double[] CalculateReponse(double[][] x)
         {
-            double[][] u1 = Matrix.Multiple(Weights.Transpose(), x1.Transpose());
+            double[][] u = Matrix.Multiple(x, Weights);
 
-            double[] y1 = new double[M];
-            for (int i = 0; i < u1.Length; i++)
+            double[] y = new double[M];
+            for (int i = 0; i < u[0].Length; i++)
             {
-                y1[i] = 1 / (1 + Math.Exp(-Beta * u1[i][0]));
+                y[i] = 1 / (1 + Math.Exp(-Beta * u[0][i]));
             }
 
-            return y1;
+            //normalize
+            double normalizeSum = y.Sum();
+
+            for (int i = 0; i < y.Length; i++)
+            {
+                y[i] = y[i] / normalizeSum;
+            }
+
+            return y;
         }
     }
 }

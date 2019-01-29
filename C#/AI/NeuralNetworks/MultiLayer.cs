@@ -32,7 +32,7 @@
 
         static Random random = new Random();
 
-        static void Main2(string[] args)
+        static void Main1(string[] args)
         {
             N = X.Length;
             M = Y.Length;

@@ -74,5 +74,28 @@
                         result[i][j] += matrixA[i][k] * matrixB[k][j] * factor;
             return result;
         }
+
+        public static double[][] Add(
+            double[][] matrixA,
+            double[][] matrixB)
+        {
+            int aRows = matrixA.Length;
+            int aCols = matrixA[0].Length;
+            int bRows = matrixB.Length;
+            int bCols = matrixB[0].Length;
+            if (aCols != bCols || aRows != bRows)
+                throw new Exception("Dimensions are not corresponding");
+            double[][] result = Matrix.Create(aRows, aCols);
+
+            for (int i = 0; i < aRows; i++)
+            {
+                for (int j = 0; j < aCols; j++)
+                {
+                    result[i][j] = matrixA[i][j] + matrixB[i][j];
+                }
+            }
+
+            return result;
+        }
     }
 }
