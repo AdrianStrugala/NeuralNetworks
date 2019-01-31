@@ -55,7 +55,7 @@
 
         private static readonly Random Random = new Random();
 
-        static void Main(string[] args)
+        static void Main3(string[] args)
         {
             N = X[0].Length;
             M = Y.Length;
