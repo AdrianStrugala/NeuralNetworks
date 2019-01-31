@@ -63,7 +63,7 @@ new double[] {1.0000, 0.9512, 0.9048, 0.8607, 0.8187, 0.7788, 0.7408, 0.7047, 0.
         public static int N;      //no of Neurons in Input Layer
         public static int M;     //no of Neurons in Output Layer
 
-        public const double AcceptedError = 0.01;
+        public static double MinError;
 
         public static readonly int Epochs = 100000;  //max no of iterations of learing phase
 
@@ -84,6 +84,8 @@ new double[] {1.0000, 0.9512, 0.9048, 0.8607, 0.8187, 0.7788, 0.7408, 0.7047, 0.
             {
                 ErrorList[i] = double.MaxValue;
             }
+
+            MinError = double.MaxValue;
 
             // INITIALIZATION OF WEIGHT MATRIX
             Weights = Matrix.CreateRandom(N, M);
@@ -142,12 +144,15 @@ new double[] {1.0000, 0.9512, 0.9048, 0.8607, 0.8187, 0.7788, 0.7408, 0.7047, 0.
                 }
 
                 //CONDITION OF STOPPING LEARNING
-                foreach (var err in ErrorList)
+
+                double errorOfThisLearningEpoch = MediumSquareError(ErrorList);
+
+                if (errorOfThisLearningEpoch < MinError)
                 {
-                    if (err > AcceptedError)
-                    {
-                        break;
-                    }
+                    MinError = errorOfThisLearningEpoch;
+                }
+                else if (errorOfThisLearningEpoch > MinError * 1.2)
+                {
                     finishLearning = true;
                 }
             }
