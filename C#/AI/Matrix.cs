@@ -5,6 +5,8 @@
 
     public static class Matrix
     {
+        private static readonly Random Random = new Random();
+
         public static double[] GetColumn(this double[][] matrix, int columnNumber)
         {
             return Enumerable.Range(0, matrix.Length)
@@ -35,6 +37,21 @@
             double[][] result = new double[rows][];
             for (int i = 0; i < rows; ++i)
                 result[i] = new double[cols];
+            return result;
+        }
+
+        public static double[][] CreateRandom(int rows, int cols)
+        {
+            var result = Create(rows, cols);
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                for (int j = 0; j < result[i].Length; j++)
+                {
+                    result[i][j] = Random.NextDouble();
+                }
+            }
+
             return result;
         }
 

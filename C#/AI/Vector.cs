@@ -4,7 +4,7 @@ namespace AI
 {
     public static class Vector
     {
-        public static double[] Substract(double[] vector1, double[] vector2)
+        public static double[] Subtract(double[] vector1, double[] vector2)
         {
             if (vector1.Length != vector2.Length)
                 throw new Exception("Dimensions are not corresponding");
@@ -15,7 +15,6 @@ namespace AI
             {
                 result[i] = vector1[i] - vector2[i];
             }
-
 
             return result;
         }

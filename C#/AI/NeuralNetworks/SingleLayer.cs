@@ -7,7 +7,6 @@
 
     static class SingleLayer
     {
-        //Animals
         public enum Environment
         {
             Water = 1,
@@ -15,6 +14,13 @@
             Ground = 3
         };
 
+        public enum Animals
+        {
+            Fish = 0,
+            Bird = 1,
+            Alpaca = 2,
+            Human = 3
+        };
 
         private static readonly double[][] X =
         {
@@ -22,7 +28,7 @@
             new double[] {1, 0, (double) Environment.Water, 0}, //fish
             new double[] {0, 2, (double) Environment.Air, 0}, //bird
             new double[] {0, 4, (double) Environment.Ground, 1}, //alpaca
-            new double[] {0, 2, (double)Environment.Ground, 0 }  //human
+            new double[] {0, 2, (double) Environment.Ground, 0 }  //human
         };
 
         private static readonly double[][] Y =  {
@@ -57,26 +63,21 @@
             ErrorList = new double[M];
             for (int i = 0; i < ErrorList.Length; i++)
             {
-                ErrorList[i] = Double.MaxValue;
+                ErrorList[i] = double.MaxValue;
             }
 
             // INITIALIZATION OF WEIGHT MATRIX
-            Weights = Matrix.Create(N, M);
+            Weights = Matrix.CreateRandom(N, M);
 
-            for (int i = 0; i < Weights.Length; i++) //Macierz wag
-            {
-                for (int j = 0; j < Weights[i].Length; j++)
-                {
-                    Weights[i][j] = Random.NextDouble();
-                }
-            }
 
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~BEFORE TRAINING~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            Check();
+            DisplayQuickNetworkResponse();
+
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~TRAINING~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             var noOfEpochsToLearn = Train();
+
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~AFTER TRAINING~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            Check();
+            DisplayQuickNetworkResponse();
 
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~EPOCHS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             Console.WriteLine(noOfEpochsToLearn);
@@ -107,7 +108,7 @@
 
 
                 // CALCULATING DIFFERENCE
-                double[] diff = Vector.Substract(output, networkResponse);
+                double[] diff = Vector.Subtract(output, networkResponse);
 
 
                 // BACK PROPAGATION LEARNING
@@ -127,15 +128,46 @@
                         break;
                     }
                     finishLearning = true;
-                }             
+                }
             }
             return e;
         }
 
 
-        static void Check()
+        static void DisplayQuickNetworkResponse()
         {
-            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~CHECK~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+            DataTable dt = new DataTable();
+            dt.Columns.Add("EXPECTED");
+            dt.Columns.Add("ACTUAL");
+            dt.Columns.Add("PROBABILITY [%]");
+
+
+            for (int l = 0; l < X.Length; l++)
+            {
+                double[][] x = Matrix.Create(1, N);
+                x[0] = X[l];
+
+                int expectedResponse = Y[l].ToList().IndexOf(Y[l].Max());
+
+                var y = CalculateReponse(x);
+                double actualMaxValue = y.Max();
+                int actualResponse = y.ToList().IndexOf(actualMaxValue);
+
+                DataRow row = dt.NewRow();
+                row[0] = (Animals)expectedResponse;
+                row[1] = (Animals)actualResponse;
+                row[2] = actualMaxValue;
+
+                dt.Rows.Add(row);
+            }
+
+            ConsoleTableBuilder builder = ConsoleTableBuilder.From(dt);
+            builder.ExportAndWrite();
+        }
+
+
+        static void DisplayFullNetworkResponse()
+        {
             DataTable dt = new DataTable();
             dt.Columns.Add("husk");
             dt.Columns.Add("no of legs");
@@ -150,9 +182,7 @@
             for (int l = 0; l < X.Length; l++)
             {
                 double[][] x = Matrix.Create(1, N);
-
                 x[0] = X[l];
-
 
                 var y = CalculateReponse(x);
 
@@ -166,12 +196,8 @@
                 row[5] = y[1];
                 row[6] = y[2];
                 row[7] = y[3];
-                dt.Rows.Add(row);
+
             }
-
-
-            ConsoleTableBuilder builder = ConsoleTableBuilder.From(dt);
-            builder.ExportAndWrite();
         }
 
         public static double[] CalculateReponse(double[][] x)
